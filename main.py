@@ -3,8 +3,19 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables from .env file (for local development)
 load_dotenv()
+
+# Debugging: Print the tokens to verify they're being loaded correctly
+DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+HUGGING_FACE_TOKEN = os.getenv('HUGGING_FACE_TOKEN')
+
+if DISCORD_BOT_TOKEN is None:
+    raise ValueError("Discord bot token not found in environment variables. Please set DISCORD_BOT_TOKEN.")
+if HUGGING_FACE_TOKEN is None:
+    raise ValueError("Hugging Face token not found in environment variables. Please set HUGGING_FACE_TOKEN.")
+
+print("Tokens loaded successfully!")  # Debugging: Confirm tokens are loaded
 
 # Set up Discord bot
 intents = discord.Intents.default()
@@ -13,7 +24,7 @@ client = discord.Client(intents=intents)
 
 # Hugging Face Inference API details
 API_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1"
-headers = {"Authorization": f"Bearer {os.getenv('HUGGING_FACE_TOKEN')}"}
+headers = {"Authorization": f"Bearer {HUGGING_FACE_TOKEN}"}
 
 # Function to query the Hugging Face API
 def query(payload):
@@ -45,4 +56,4 @@ async def on_message(message):
         await message.channel.send("Sorry, I couldn't generate a response. Please try again later.")
 
 # Run the bot using the token from environment variables
-client.run(os.getenv('DISCORD_BOT_TOKEN'))
+client.run(DISCORD_BOT_TOKEN)
