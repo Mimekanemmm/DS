@@ -2,6 +2,8 @@ import discord
 import requests
 import os
 from dotenv import load_dotenv
+from flask import Flask
+import threading
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -16,6 +18,13 @@ if HUGGING_FACE_TOKEN is None:
     raise ValueError("Hugging Face token not found in environment variables. Please set HUGGING_FACE_TOKEN.")
 
 print("Tokens loaded successfully!")  # Debugging: Confirm tokens are loaded
+
+# Set up Flask app for Render's port requirement
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Discord bot is running!"
 
 # Set up Discord bot
 intents = discord.Intents.default()
@@ -55,5 +64,19 @@ async def on_message(message):
         print(f"Error: {e}")
         await message.channel.send("Sorry, I couldn't generate a response. Please try again later.")
 
-# Run the bot using the token from environment variables
-client.run(DISCORD_BOT_TOKEN)
+# Function to run the Flask app
+def run_flask():
+    port = int(os.getenv('PORT', 5000))  # Use PORT if set, otherwise default to 5000
+    app.run(host='0.0.0.0', port=port)
+
+# Function to run the Discord bot
+def run_bot():
+    client.run(DISCORD_BOT_TOKEN)
+
+# Run Flask and Discord bot in separate threads
+if __name__ == '__main__':
+    flask_thread = threading.Thread(target=run_flask)
+    bot_thread = threading.Thread(target=run_bot)
+
+    flask_thread.start()
+    bot_thread.start()
